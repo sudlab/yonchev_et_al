@@ -1,0 +1,184 @@
+```{R message=FALSE}
+library(tximport)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gplots)
+library(DESeq2)
+
+geneconversiontable <- read.delim("./featurecounts_smallrna//combined_exon_counts.txt")
+geneconversiontable$Geneid.Chr.Start.End.Strand.Length <- substr(geneconversiontable$Geneid.Chr.Start.End.Strand.Length, 0, 15)
+
+
+names(geneconversiontable)[2] <- "HCT_R1"
+names(geneconversiontable)[3] <- "HCT_R2"
+names(geneconversiontable)[4] <- "HCT_R3"
+names(geneconversiontable)[5] <- "UL1_R1"
+names(geneconversiontable)[6] <- "UL1_R2"
+names(geneconversiontable)[7] <- "UL1_R3"
+
+condition <- factor(c("HCT","HCT","HCT","UL1","UL1","UL1"))
+samples <- as.data.frame(6:1)
+rownames(samples)<-c("HCT_R1","HCT_R2","HCT_R3","UL1_R1","UL1_R2","UL1_R3")
+colnames(samples)<-"condition"
+samples$condition<-condition
+
+row.names(geneconversiontable) <- geneconversiontable$Geneid.Chr.Start.End.Strand.Length
+geneconversiontable[1] <- NULL
+
+ddsTxi <- DESeqDataSetFromMatrix(geneconversiontable,
+                                   colData = samples,
+                                   design = ~ condition)
+
+dds <- DESeq(ddsTxi)
+
+
+res <-results(dds, lfcThreshold = 0)
+resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE,replaced=TRUE)), by="row.names", sort=FALSE)
+names(resdata)[1] <- "geneid"
+
+DESeq2::plotMA(res,coef = "log2FoldChange")
+abline(h=0, col="red")
+
+smalldiffexp <- resdata
+
+histones <- as.data.frame(read.csv("./geneset/replication_dependent_histones.txt"))
+names(histones)[1] <- "Gene"
+
+library(biomaRt)
+ensembl=useMart("ensembl", dataset="hsapiens_gene_ensembl")
+genes <- smalldiffexp$geneid
+G_list <- getBM(filters= "ensembl_gene_id", attributes= c("ensembl_gene_id","hgnc_symbol"),values=genes,mart=ensembl)
+
+idx <- match(smalldiffexp$geneid, G_list$ensembl_gene_id)
+smalldiffexp$Gene <- G_list$hgnc_symbol[idx]
+smalldiffexp$Gene[smalldiffexp$geneid=="ENSG00000203812"] <- "H2AC18"
+
+mergedsmall <- merge(smalldiffexp,histones,by="Gene",all.x=F,all.y=F)
+```
+
+
+```{r}
+geneconversiontable <- read.delim("./featurecounts_polya/combined_exon_counts.txt")
+geneconversiontable$Geneid.Chr.Start.End.Strand.Length <- substr(geneconversiontable$Geneid.Chr.Start.End.Strand.Length, 0, 15)
+
+
+names(geneconversiontable)[2] <- "HCT_R1"
+names(geneconversiontable)[3] <- "HCT_R2"
+names(geneconversiontable)[4] <- "HCT_R3"
+names(geneconversiontable)[5] <- "UL1_R1"
+names(geneconversiontable)[6] <- "UL1_R2"
+names(geneconversiontable)[7] <- "UL1_R3"
+
+
+
+condition <- factor(c("HCT","HCT","HCT","UL1","UL1","UL1"))
+samples <- as.data.frame(6:1)
+rownames(samples)<-c("HCT_R1","HCT_R2","HCT_R3","UL1_R1","UL1_R2","UL1_R3")
+colnames(samples)<-"condition"
+samples$condition<-condition
+
+row.names(geneconversiontable) <- geneconversiontable$Geneid.Chr.Start.End.Strand.Length
+geneconversiontable[1] <- NULL
+
+ddsTxi <- DESeqDataSetFromMatrix(geneconversiontable,
+                                   colData = samples,
+                                   design = ~ condition)
+
+dds <- DESeq(ddsTxi)
+
+res <-results(dds)
+resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE)), by="row.names", sort=FALSE)
+names(resdata)[1] <- "geneid"
+resdata <- resdata%>%
+  dplyr::filter(resdata$baseMean >= 10)
+
+polyadiff <- resdata
+
+ensembl=useMart("ensembl", dataset="hsapiens_gene_ensembl")
+genes <- polyadiff$geneid
+G_list <- getBM(filters= "ensembl_gene_id", attributes= c("ensembl_gene_id","hgnc_symbol"),values=genes,mart=ensembl)
+idx <- match(polyadiff$geneid, G_list$ensembl_gene_id)
+polyadiff$Gene <- G_list$hgnc_symbol[idx]
+polyadiff$Gene[polyadiff$geneid=="ENSG00000203812"] <- "H2AC18"
+
+polyadiff<-polyadiff%>%
+  dplyr::filter(polyadiff$baseMean>10)
+
+mergedpolya <- merge(polyadiff,histones,by="Gene",all.x=F,all.y=F)
+
+#H3C14 and 15 given counts despite no expression; remove
+mergedpolya <- mergedpolya%>%
+  dplyr::filter(mergedpolya$baseMean>30 & mergedpolya$Gene !="H3C15" & mergedpolya$Gene != "H3C14")
+
+mergedsmall <- mergedsmall%>%
+  dplyr::filter(mergedsmall$baseMean>10)
+
+mergedpolya$Experiment <- "  PolyA+ \n Histones"
+mergedpolya$Sample <- "hnRNPUL1"
+mergedsmall$Experiment <- "  PolyA- \n Histones"
+mergedsmall$Sample <- "hnRNPUL1"
+
+mergedpolya1 <- mergedpolya%>%
+  dplyr::select(Gene,log2FoldChange,Sample,Experiment)
+
+mergedsmall1 <- mergedsmall%>%
+  dplyr::select(Gene,log2FoldChange,Sample,Experiment)
+
+plot <- rbind(mergedpolya1,mergedsmall1)
+```
+
+
+```{r}
+ttest1 <- plot%>%
+  dplyr::filter(plot$Experiment=="  PolyA+ \n Histones")
+
+ttest2 <- ttest1
+ttest2$log2FoldChange<-0
+ttest2$Sample<- "Ctrl"
+
+ttest3 <- rbind(ttest1,ttest2)
+t.test(log2FoldChange~Sample,data=ttest3)
+```  
+
+
+```{r}
+ttest1 <- plot%>%
+  dplyr::filter(plot$Experiment=="  PolyA- \n Histones")
+
+ttest2 <- ttest1
+ttest2$log2FoldChange<-0
+ttest2$Sample<- "Ctrl"
+
+ttest3 <- rbind(ttest1,ttest2)
+t.test(log2FoldChange~Sample,data=ttest3)
+```
+
+```{r,fig.height=2.5,fig.width=2.5}
+
+library(Ipaper)
+
+
+ggplot(plot,aes(x=Experiment,y=log2FoldChange,fill=Experiment))+
+      geom_violin(trim=TRUE,width=0.75)+ 
+geom_boxplot(width=0.2,width.errorbar = 0.1)+
+    theme(plot.title = element_text(size=11))+
+  ylab("Log2 Normalized Counts")+
+    ylab(bquote(paste('Log2FC RNA-seq')))+
+  theme_bw()+
+  theme(plot.title = element_text(size=10))+
+    theme(legend.position = "none")+
+  xlab("")+
+  coord_cartesian(ylim=c(-2.5,2.5))+
+            annotate(geom="text", x=1, y=0.1, label="***",
+              color="black",size=4)+
+              annotate(geom="text", x=1, y=0.6, label="n = 29",
+              color="black",size=3)+
+              annotate(geom="text", x=2, y=1.95, label="**",
+              color="black",size=4)+
+                annotate(geom="text", x=2, y=2.4, label="n = 16",
+              color="black",size=3)+
+  theme(panel.spacing.x=unit(0.5, "lines") , panel.spacing.y=unit(0.5,"lines"))+
+  geom_hline(aes(yintercept=0),colour="grey30",linetype="dashed")
+ggsave(file="./Fig5M_Histones.png",dpi=300,units="in",width=2.5,height=2.5)
+```

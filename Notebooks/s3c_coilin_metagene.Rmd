@@ -1,0 +1,89 @@
+UL1 metagene over coilin peaks. Peaks called via MACS2. Deeptools metagene over midpoint of peaks using geneset generated from peaks:
+
+
+```{r}
+library(dplyr)
+peaks <- read.csv(file="./Coilin_r1_peaks.bed",sep="\t",header=F)
+
+peaks <- peaks%>%
+  dplyr::select(V1,V2,V3)
+
+peaks$V2 <- ((round((peaks$V3+peaks$V2)/2))-1000)
+peaks$V3 <- peaks$V2+2000
+
+write.table(peaks,file="./geneset.bed",col.names = F,row.names = F,quote = F,sep="\t")
+```
+
+```{r}
+library(dplyr)
+ul1 <- read.csv("./matrix_Coilin-ChIP-Coil-r1.narrow_fc_signal.gz",sep="\t",header=F)
+ul1 <- ul1[-1,]
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1 <- ul1[,!(names(ul1) %in% drop)]
+ul1 <- ul1[rowSums(ul1) >1000, , drop=FALSE]
+
+ul2_n <- as.data.frame(t(apply(ul1,1,function(x) x/sum(x))))
+ul2_n <- na.omit(ul2_n)
+
+ul1_sum <- as.data.frame(colSums(ul2_n,))
+ul1_sum$bin <- 1:200
+ul1_sum$Sample <- "Coilin"
+ul1_sum$`colSums(ul2_n, )` <- ul1_sum$`colSums(ul2_n, )`/sum(ul1_sum$`colSums(ul2_n, )`)
+coilin <- ul1_sum
+
+ul1 <- read.csv("./matrix_Coilin-ChIP-UL1-r1.narrow_fc_signal.gz",sep="\t",header=F)
+ul1 <- ul1[-1,]
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1 <- ul1[,!(names(ul1) %in% drop)]
+ul1 <- ul1[rowSums(ul1) >1000, , drop=FALSE]
+
+ul2_n <- as.data.frame(t(apply(ul1,1,function(x) x/sum(x))))
+ul2_n <- na.omit(ul2_n)
+
+ul1_sum <- as.data.frame(colSums(ul2_n,))
+ul1_sum$bin <- 1:200
+ul1_sum$Sample <- "hnRNPUL1"
+ul1_sum$`colSums(ul2_n, )` <- ul1_sum$`colSums(ul2_n, )`/sum(ul1_sum$`colSums(ul2_n, )`)
+ul1_r1 <- ul1_sum
+
+ul1 <- read.csv("./matrix_Coilin-ChIP-UL1-r2.narrow_fc_signal.gz",sep="\t",header=F)
+ul1 <- ul1[-1,]
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1 <- ul1[,!(names(ul1) %in% drop)]
+ul1 <- ul1[rowSums(ul1) >1000, , drop=FALSE]
+
+ul2_n <- as.data.frame(t(apply(ul1,1,function(x) x/sum(x))))
+ul2_n <- na.omit(ul2_n)
+
+ul1_sum <- as.data.frame(colSums(ul2_n,))
+ul1_sum$bin <- 1:200
+ul1_sum$Sample <- "hnRNPUL1"
+ul1_sum$`colSums(ul2_n, )` <- ul1_sum$`colSums(ul2_n, )`/sum(ul1_sum$`colSums(ul2_n, )`)
+ul1_r2 <- ul1_sum
+
+ul1_r1$`colSums(ul2_n, )`<- (ul1_r1$`colSums(ul2_n, )`+ul1_r2$`colSums(ul2_n, )`)/2
+
+metagene <- as.data.frame(rbind(ul1_r1,coilin))
+names(metagene)[1] <- "Sum"
+metagene$Sum<- metagene$Sum*100
+```
+
+```{r,fig.height=2.25,fig.width=4}
+library(ggplot2)
+library(dplyr)
+cbbPalette <- c( "#009E73", "#56B4E9","#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+metagene%>%
+ggplot() +
+  aes(x=bin, y=Sum, col=Sample) +
+  scale_colour_manual(values=cbbPalette)+
+  geom_line(size=.65) + 
+    theme_classic() +
+    theme(plot.title=element_text(hjust=0,size=11)) +
+  ylab("Normalized Density")+
+  geom_vline(xintercept = c(100), linetype=2,
+                color = "grey50", size=0.25)+
+  coord_cartesian(xlim=c(0,200))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))+
+  scale_x_continuous(name=NULL, breaks=c(0,100,200), labels=c("-1kb","Coilin Peak \n Midpoint","+1kb"))
+ggsave("./coilin_ul1_chip.png",height=2.25,width=4,units="in")
+```

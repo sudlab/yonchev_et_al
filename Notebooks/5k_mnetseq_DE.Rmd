@@ -1,0 +1,182 @@
+List of replication dependent histones obtained from  doi: 10.1093/nar/gky768 (n=65). and used to define biotype in DEseq2 analysis of mNETseq data below.
+
+```{r}
+library(dplyr)
+histones <- as.data.frame(read.csv("./replication_dependent_histones.txt",header=F))
+names(histones)[1] <- "Gene"
+
+library(biomaRt)
+ensembl=useMart("ensembl", dataset="hsapiens_gene_ensembl")
+genes <- histones$Gene
+G_list <- getBM(filters="hgnc_symbol", attributes= c("ensembl_gene_id","hgnc_symbol"),values=genes,mart=ensembl)
+names(G_list)[1] <- "Gene"
+G_list$Gene[G_list$Gene=="ENSG00000288825"] <-"ENSG00000203812" 
+
+bedfile <- as.data.frame(read.csv("./obtain_scaling_factor/counts/raw/all_gene_regions.bed",sep="\t",header=F))
+names(bedfile)[4] <- "Gene"
+
+histonebed <- merge(bedfile,G_list,by="Gene",all.x=F,all.y=F)
+histonebed <- histonebed%>%
+  dplyr::select(V1,V2,V3,Gene,V5,V6)
+
+
+histonebed <- histonebed[
+  with(histonebed, order(V1, V2)),
+]
+
+write.table(histonebed,file="./Histone/replication_dependent_histones.bed",row.names=F,col.names=F,quote = F,sep="\t")
+```
+
+
+```{r}
+h1 <- read.csv(file=".//obtain_scaling_factor/counts/raw//positive/matrix_HCT116-1_positive_cpm.gz",sep="\t",header=F)
+h1 <- h1[-1,]
+h1 <- h1%>%
+  dplyr::select(V7,V4)
+names(h1)[1] <- "HCT_1"
+
+h2 <- read.csv(file="./obtain_scaling_factor/counts/raw/positive/matrix_HCT116-2_positive_cpm.gz",sep="\t",header=F)
+h2 <- h2[-1,]
+h2 <- h2%>%
+  dplyr::select(V7,V4)
+names(h2)[1] <- "HCT_2"
+
+u1 <- read.csv(file="./obtain_scaling_factor/counts/raw/positive/matrix_hnUL1-1_positive_cpm.gz",sep="\t",header=F)
+u1 <- u1[-1,]
+u1 <- u1%>%
+  dplyr::select(V7,V4)
+names(u1)[1]<-"UL1_1"
+
+u2 <- read.csv(file="./obtain_scaling_factor/counts/raw/positive/matrix_hnUL1-2_positive_cpm.gz",sep="\t",header=F)
+u2 <- u2[-1,]
+u2 <- u2%>%
+  dplyr::select(V7,V4)
+names(u2)[1]<- "UL1_2"
+
+counts <- merge(h1,h2,by="V4")
+counts <- merge(counts,u1,by="V4")
+counts <- merge(counts,u2,by="V4")
+row.names(counts) <- counts$V4
+counts_1 <- counts%>%
+  dplyr::select(HCT_1,HCT_2,UL1_1,UL1_2)
+
+####NEGATIVE STRAND
+
+h1 <- read.csv(file="./obtain_scaling_factor/counts/raw//negative/matrix_HCT116-1_negative_cpm.gz",sep="\t",header=F)
+h1 <- h1[-1,]
+h1 <- h1%>%
+  dplyr::select(V7,V4)
+names(h1)[1] <- "HCT_1"
+
+h2 <- read.csv(file="./obtain_scaling_factor/counts/raw/negative/matrix_HCT116-2_negative_cpm.gz",sep="\t",header=F)
+h2 <- h2[-1,]
+h2 <- h2%>%
+  dplyr::select(V7,V4)
+names(h2)[1] <- "HCT_2"
+
+u1 <- read.csv(file="./obtain_scaling_factor/counts/raw/negative/matrix_hnUL1-1_negative_cpm.gz",sep="\t",header=F)
+u1 <- u1[-1,]
+u1 <- u1%>%
+  dplyr::select(V7,V4)
+names(u1)[1]<-"UL1_1"
+
+u2 <- read.csv(file="./obtain_scaling_factor/counts/raw/negative/matrix_hnUL1-2_negative_cpm.gz",sep="\t",header=F)
+u2 <- u2[-1,]
+u2 <- u2%>%
+  dplyr::select(V7,V4)
+names(u2)[1]<- "UL1_2"
+
+counts <- merge(h1,h2,by="V4")
+counts <- merge(counts,u1,by="V4")
+counts <- merge(counts,u2,by="V4")
+row.names(counts) <- counts$V4
+counts_2 <- counts%>%
+  dplyr::select(HCT_1,HCT_2,UL1_1,UL1_2)
+
+counts <- rbind(counts_1,counts_2)
+
+SF1 <- sum(counts$HCT_1)
+SF2 <- sum(counts$HCT_2)
+SF3 <- sum(counts$UL1_1)
+SF4 <- sum(counts$UL1_2)
+
+library(DESeq2)
+
+condition <- factor(c("HCT","HCT","UL1","UL1"))
+samples <- as.data.frame(4:1)
+rownames(samples)<-c("HCT_1","HCT_2","UL1_1","UL1_2")
+colnames(samples)<-"condition"
+samples$condition<-condition
+
+ddsTxi <- DESeqDataSetFromMatrix(counts,
+                                   colData = samples,
+                                   design = ~ condition)
+
+dds <- DESeq(ddsTxi)
+
+
+res <-results(dds, lfcThreshold = 0)
+resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE,replaced=TRUE)), by="row.names", sort=FALSE)
+names(resdata)[1] <- "geneid"
+resdata <- resdata%>%
+  dplyr::filter(resdata$baseMean>100)
+
+plotMA(res,coef = "log2FoldChange")
+abline(h=0, col="red")
+
+sizeFactors(dds)
+
+library(RSQLite)
+db <- dbConnect(SQLite(), "/mnt/sharc/shared/sudlab1/General/annotations/hg38_noalt_ensembl85/csvdb")
+biotypes <- dbGetQuery(db, "SELECT DISTINCT gene_id, gene_biotype FROM gene_info")
+uniquebiotypes <- unique(biotypes$gene_biotype)
+names(resdata)[1] <- "gene_id"
+
+
+biotypesexpgenesctrl <- biotypes[which(biotypes$gene_id %in% resdata$gene_id),]
+names(biotypesexpgenesctrl)[1] <- "gene_id"
+test <- merge(biotypesexpgenesctrl,resdata,by.x="gene_id",by.y="gene_id")
+
+h1 <- read.csv(file="./Histone/replication_dependent_histones.bed",sep="\t",header=F)
+pcg <- read.csv(file="./PCG/proteincoding_nonoverlapping1.bed.gz",sep="\t",header=F)
+
+test <- resdata
+
+test$gene_biotype[test$gene_id%in%pcg$V4] <- "Protein Coding"
+test$gene_biotype[test$gene_id%in%h1$V4] <- "Histone"
+
+boxplot_histone <- test%>%
+  dplyr::filter(test$gene_biotype=="Histone" | test$gene_biotype=="Protein Coding")
+
+boxplot_histone$gene_biotype <- factor(boxplot_histone$gene_biotype, levels=c("Protein Coding","Histone"))
+
+numberpcg <- boxplot_histone%>%
+  dplyr::filter(boxplot_histone$gene_biotype=="Protein Coding")
+numberhist<- boxplot_histone%>%
+  dplyr::filter(boxplot_histone$gene_biotype=="Histone")
+```
+
+```{r,fig.height=2.5,fig.width=2.5}
+library(ggplot2)
+library(Ipaper)
+
+ggplot(boxplot_histone,aes(x=gene_biotype,y=log2FoldChange,fill=gene_biotype))+
+      geom_violin(trim=TRUE,width=0.75)+
+geom_boxplot(width=0.2,width.errorbar = 0.1,outlier.shape = NA)+
+  ylab("Log2 Normalized Counts")+
+    ylab(bquote(paste('Log2FC mNET-seq')))+
+  theme_bw()+
+  theme(plot.title = element_text(size=9))+
+    theme(legend.position = "none")+
+  xlab("")+
+  coord_cartesian(ylim=c(-1.5,1.5))+
+              annotate(geom="text", x=1.065, y=1.25, label="n = 7931",
+              color="black",size=3.5)+
+  theme(panel.spacing.x=unit(0.5, "lines") , panel.spacing.y=unit(0.5,"lines"))+
+  geom_hline(aes(yintercept=0),colour="grey30",linetype="dashed")+
+              annotate(geom="text", x=2, y=0.42, label="***",
+              color="black",size=4)+
+            annotate(geom="text", x=2, y=0.70, label="n = 47",
+              color="black",size=3.5)
+ggsave(file="./Fig5K-mNTseq-histones_paper.png",dpi=300,units="in",width=2.5,height=2.5)
+```

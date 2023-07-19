@@ -1,0 +1,105 @@
+```{R message=FALSE}
+library(tximport)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gplots)
+library(DESeq2)
+
+geneconversiontable <- read.delim("./featurecounts/combined_exon_counts.txt")
+geneconversiontable$Geneid.Chr.Start.End.Strand.Length <- substr(geneconversiontable$Geneid.Chr.Start.End.Strand.Length, 0, 15)
+
+
+names(geneconversiontable)[2] <- "HCT_R1"
+names(geneconversiontable)[3] <- "HCT_R2"
+names(geneconversiontable)[4] <- "HCT_R3"
+names(geneconversiontable)[5] <- "UL1_R1"
+names(geneconversiontable)[6] <- "UL1_R2"
+names(geneconversiontable)[7] <- "UL1_R3"
+
+condition <- factor(c("HCT","HCT","HCT","UL1","UL1","UL1"))
+samples <- as.data.frame(6:1)
+rownames(samples)<-c("HCT_R1","HCT_R2","HCT_R3","UL1_R1","UL1_R2","UL1_R3")
+colnames(samples)<-"condition"
+samples$condition<-condition
+
+row.names(geneconversiontable) <- geneconversiontable$Geneid.Chr.Start.End.Strand.Length
+geneconversiontable[1] <- NULL
+
+ddsTxi <- DESeqDataSetFromMatrix(geneconversiontable,
+                                   colData = samples,
+                                   design = ~ condition)
+
+dds <- DESeq(ddsTxi)
+
+
+res <-results(dds, lfcThreshold = 0)
+resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE,replaced=TRUE)), by="row.names", sort=FALSE)
+names(resdata)[1] <- "geneid"
+
+DESeq2::plotMA(res,coef = "log2FoldChange")
+abline(h=0, col="red")
+```
+
+
+```{r}
+library(RSQLite)
+db <- dbConnect(SQLite(), "/mnt/sharc/shared/sudlab1/General/annotations/hg38_noalt_ensembl85/csvdb")
+biotypes <- dbGetQuery(db, "SELECT DISTINCT gene_id, gene_biotype FROM gene_info")
+uniquebiotypes <- unique(biotypes$gene_biotype)
+names(resdata)[1] <- "gene_id"
+
+biotypesexpgenesctrl <- biotypes[which(biotypes$gene_id %in% resdata$gene_id),]
+names(biotypesexpgenesctrl)[1] <- "gene_id"
+test <- merge(biotypesexpgenesctrl,resdata,by.x="gene_id",by.y="gene_id")
+
+
+diff<- test
+diff1 <- diff%>%
+  filter(diff$baseMean > 10)
+
+smalldiffexp <- diff1
+
+filteredpc <- diff1%>%
+  dplyr::filter(diff1$gene_biotype=="protein_coding" | diff1$gene_biotype=="snRNA" | diff1$gene_biotype=="scaRNA" | diff1$gene_biotype=="snoRNA")
+filteredpc$Sample <- "hnRNPUL1/HCT116"
+
+pc <- filteredpc%>%
+  dplyr::filter(filteredpc$gene_biotype=="protein_coding")
+
+filteredpc$gene_biotype[filteredpc$gene_biotype=="protein_coding"] <- "Protein Coding"
+```
+
+```{r,fig.height=2.5,fig.width=2.5}
+library(ggplot2)
+library(Ipaper)
+
+filteredpc <- diff1%>%
+  dplyr::filter(diff1$gene_biotype=="protein_coding" | diff1$gene_biotype=="snRNA" )
+filteredpc$Sample <- "hnRNPUL1/HCT116"
+
+pc <- filteredpc%>%
+  dplyr::filter(filteredpc$gene_biotype=="protein_coding")
+
+filteredpc$gene_biotype[filteredpc$gene_biotype=="protein_coding"] <- "Protein Coding"
+
+ggplot(filteredpc,aes(x=gene_biotype,y=log2FoldChange,fill=gene_biotype))+
+    geom_violin(trim=TRUE,width=0.75)+
+geom_boxplot(width=0.2,width.errorbar = 0.1,outlier.shape = NA)+
+      theme_bw()+
+  ylab("Log2 Normalized Counts")+
+    ylab(bquote(paste('Log2FC sRNA-seq')))+
+  theme(plot.title = element_text(size=11))+
+    theme(legend.position = "none")+
+  xlab("")+
+  coord_cartesian(y=c(-2.75,2.75))+
+              annotate(geom="text", x=1.065, y=2, label="n = 6638",
+              color="black",size=3)+
+            annotate(geom="text", x=2, y=0.5, label="***",
+              color="black",size=4)+
+              annotate(geom="text", x=2, y=1.05, label="n = 34",
+              color="black",size=3)+
+  theme(panel.spacing.x=unit(0.5, "lines") , panel.spacing.y=unit(0.5,"lines"))+
+  geom_hline(aes(yintercept=0),colour="grey30",linetype="dashed")
+ggsave(file="./Fig5A-ncRNAs_pc_paper.png",dpi=300,units="in",width=2.5,height=2.5)
+```

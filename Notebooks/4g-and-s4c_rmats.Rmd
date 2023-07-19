@@ -1,0 +1,103 @@
+```{r}
+library(dplyr)
+
+ul1events <- read.csv("./RMats_on_UL1lncRNAseq/TSL1_output/post/summary.txt",sep="\t")
+ul1eventstot <- ul1events%>%
+  dplyr::select(EventType,SignificantEventsJCEC)
+ul1eventsdown <- ul1events%>%
+  dplyr::select(EventType,SigEventsJCECSample1HigherInclusion)
+ul1eventsup <- ul1events%>%
+  dplyr::select(EventType,SigEventsJCECSample2HigherInclusion)
+
+names(ul1eventsdown)[2] <- "SignificantEventsJCEC"
+names(ul1eventsup)[2] <- "SignificantEventsJCEC"
+
+ul1eventstot$Type <- "Total"
+ul1eventsdown$Type <- "Decreased Inclusion"
+ul1eventsup$Type <- "Increased Inclusion"
+
+ul1events1 <- rbind(ul1eventsdown,ul1eventsup)
+ul1events1$SignificantEventsJCEC[ul1events1$Type=="Decreased Inclusion"] <- ul1events1$SignificantEventsJCEC*-1
+
+ul1events1$EventType <- c("Skipped exon","Alternative 5' splice site", "Alternative 3' splice site", "Mutually exclusive exon", "Retained intron")
+```
+```{r,fig.width=3.5,fig.height=2.5}
+library(ggplot2)
+cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+ggplot(data=ul1events1,aes(x=EventType,y=SignificantEventsJCEC,fill=factor(Type)))+
+  geom_bar(stat="identity")+
+     scale_fill_manual(values=cbbPalette[c(2,6)],
+                    labels=c("Decreased\ninclusion","Increased\ninclusion"),
+                    name=NULL,
+                    position="bottom") +
+  theme_bw()+
+  coord_flip()+
+  xlab("")+
+  ylab("Number of Significant Events")+
+    scale_y_continuous(labels=function(x) abs(x),
+                      name="Number of Significant Events") +
+  theme(legend.position="bottom", 
+        axis.text.x=element_text(size=8),
+        axis.text.y=element_text(size=8),
+        axis.title = element_text(size=9),
+        legend.text = element_text(size=8),
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(-2,-2,-2,-2)) +
+  geom_hline(yintercept=0, lwd=0.5, col="grey20")
+ggsave("./rmats_lncRNAseq.png",width=3.5,height=2.5)
+```
+
+```{r}
+ul1events <- read.csv("./RMats_on_ENCODERNAseq/hnRNPUL1/test_jack//post/summary.txt",sep="\t")
+ul1eventstot <- ul1events%>%
+  dplyr::select(EventType,SignificantEventsJCEC)
+ul1eventsdown <- ul1events%>%
+  dplyr::select(EventType,SigEventsJCECSample1HigherInclusion)
+ul1eventsup <- ul1events%>%
+  dplyr::select(EventType,SigEventsJCECSample2HigherInclusion)
+
+names(ul1eventsdown)[2] <- "SignificantEventsJCEC"
+names(ul1eventsup)[2] <- "SignificantEventsJCEC"
+
+ul1eventstot$Type <- "Total"
+ul1eventsdown$Type <- "Decreased Inclusion"
+ul1eventsup$Type <- "Increased Inclusion"
+
+ul1events1 <- rbind(ul1eventsdown,ul1eventsup)
+ul1events1$SignificantEventsJCEC[ul1events1$Type=="Decreased Inclusion"] <- ul1events1$SignificantEventsJCEC*-1
+
+ul1events1$EventType <- c("Skipped exon","Alternative 5' splice site", "Alternative 3' splice site", "Mutually exclusive exon", "Retained intron")
+ul1 <- ul1events1
+
+
+ul1$Sample <- "hnRNPUL1"
+
+```
+
+
+
+
+```{r,fig.width=3.5,fig.height=2.5}
+ggplot(data=ul1,aes(x=EventType,y=SignificantEventsJCEC,fill=factor(Type)))+
+  geom_bar(stat="identity")+
+     scale_fill_manual(values=cbbPalette[c(2,6)],
+                    labels=c("Decreased\ninclusion","Increased\ninclusion"),
+                    name=NULL,
+                    position="bottom") +
+  theme_bw()+
+  coord_flip()+
+  xlab("")+
+  ylab("Number of Significant Events")+
+      scale_y_continuous(labels=function(x) abs(x),
+                      name="Number of Significant Events") +
+  theme(legend.position="bottom", 
+        axis.text.x=element_text(size=8),
+        axis.text.y=element_text(size=8),
+        axis.title = element_text(size=9),
+        legend.text = element_text(size=8),
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(-2,-2,-2,-2)) +
+  geom_hline(yintercept=0, lwd=0.5, col="grey20")
+ggsave("./rmats_encode.png",width=3.5,height=2.5)
+
+```

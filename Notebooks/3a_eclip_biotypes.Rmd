@@ -1,0 +1,312 @@
+```{r}
+library(dplyr)
+ul1_i<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_HNRNPUL1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_i <- ul1_i[-1,]
+
+
+ul1_r1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r1 <- ul1_r1[-1,]
+
+ul1_r2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r2 <- ul1_r2[-1,]
+
+
+ul1_ni<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_HNRNPUL1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_ni <- ul1_ni[-1,]
+
+
+ul1_nr1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr1 <- ul1_nr1[-1,]
+
+ul1_nr2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr2 <- ul1_nr2[-1,]
+
+ul1_i <- rbind(ul1_i,ul1_ni)
+ul1_r1 <- rbind(ul1_r1,ul1_nr1)
+ul1_r2 <- rbind(ul1_r2,ul1_nr2)
+
+ul1_r1$FC <- (((ul1_r1$V7+ul1_r2$V7)/2)/ul1_i$V7)
+
+ul1_r1$ctrlreads <- ul1_i$V7
+ul1_r1 <- na.omit(ul1_r1)
+
+ul1_r1$length <- (ul1_r1$V3-ul1_r1$V2)/1000
+ul1_r1 <- ul1_r1%>%
+  dplyr::filter(ul1_r1$ctrlreads > ul1_r1$length & ul1_r1$ctrlreads > 10)
+
+
+ul1_r1$LFC <- log2(ul1_r1$FC)
+
+snrna <- read.csv("./enrichment_analysis/genesets/snrna.bed",sep="\t",header=F)
+pc<- read.csv("./enrichment_analysis/genesets/proteincoding_nonoverlapping1.bed",sep="\t",header=F)
+linc<- read.csv("./enrichment_analysis/genesets/lincrna.bed",sep="\t",header=F)
+cd<- read.csv("./enrichment_analysis/genesets/cdbox.bed",sep="\t",header=F)
+haca<- read.csv("./enrichment_analysis/genesets/hacabox.bed",sep="\t",header=F)
+sca<- read.csv("./enrichment_analysis/genesets/scarna.bed",sep="\t",header=F)
+
+ul1_r1$gene_biotype[ul1_r1$V4%in%snrna$V4] <- "snRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%linc$V4] <- "lincRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%cd$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%haca$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%pc$V4] <- "Protein Coding"
+ul1_r1$gene_biotype[ul1_r1$V4%in%sca$V4] <- "scaRNA"
+
+ul1_r1$Sample <- "hnRNPUL1"
+eclip_ul1 <- ul1_r1
+
+ul1_i<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_HNRNPU_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_i <- ul1_i[-1,]
+
+
+ul1_r1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r1 <- ul1_r1[-1,]
+
+ul1_r2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r2 <- ul1_r2[-1,]
+
+
+ul1_ni<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_HNRNPU_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_ni <- ul1_ni[-1,]
+
+
+ul1_nr1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr1 <- ul1_nr1[-1,]
+
+ul1_nr2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr2 <- ul1_nr2[-1,]
+
+ul1_i <- rbind(ul1_i,ul1_ni)
+ul1_r1 <- rbind(ul1_r1,ul1_nr1)
+ul1_r2 <- rbind(ul1_r2,ul1_nr2)
+
+ul1_r1$FC <- (((ul1_r1$V7+ul1_r2$V7)/2)/ul1_i$V7)
+
+ul1_r1$ctrlreads <- ul1_i$V7
+ul1_r1 <- na.omit(ul1_r1)
+
+ul1_r1$length <- (ul1_r1$V3-ul1_r1$V2)/1000
+ul1_r1 <- ul1_r1%>%
+  dplyr::filter(ul1_r1$ctrlreads > ul1_r1$length & ul1_r1$ctrlreads > 10)
+
+
+ul1_r1$LFC <- log2(ul1_r1$FC)
+
+ul1_r1$gene_biotype[ul1_r1$V4%in%snrna$V4] <- "snRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%linc$V4] <- "lincRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%cd$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%haca$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%pc$V4] <- "Protein Coding"
+ul1_r1$gene_biotype[ul1_r1$V4%in%sca$V4] <- "scaRNA"
+
+ul1_r1$Sample <- "hnRNPU"
+eclip_u <- ul1_r1
+
+
+ul1_i<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_TAF15_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_i <- ul1_i[-1,]
+
+
+ul1_r1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r1 <- ul1_r1[-1,]
+
+ul1_r2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r2 <- ul1_r2[-1,]
+
+
+ul1_ni<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_TAF15_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_ni <- ul1_ni[-1,]
+
+
+ul1_nr1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr1 <- ul1_nr1[-1,]
+
+ul1_nr2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr2 <- ul1_nr2[-1,]
+
+ul1_i <- rbind(ul1_i,ul1_ni)
+ul1_r1 <- rbind(ul1_r1,ul1_nr1)
+ul1_r2 <- rbind(ul1_r2,ul1_nr2)
+
+ul1_r1$FC <- (((ul1_r1$V7+ul1_r2$V7)/2)/ul1_i$V7)
+
+ul1_r1$ctrlreads <- ul1_i$V7
+ul1_r1 <- na.omit(ul1_r1)
+
+ul1_r1$length <- (ul1_r1$V3-ul1_r1$V2)/1000
+ul1_r1 <- ul1_r1%>%
+  dplyr::filter(ul1_r1$ctrlreads > ul1_r1$length& ul1_r1$ctrlreads > 10)
+
+
+ul1_r1$LFC <- log2(ul1_r1$FC)
+
+ul1_r1$gene_biotype[ul1_r1$V4%in%snrna$V4] <- "snRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%linc$V4] <- "lincRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%cd$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%haca$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%pc$V4] <- "Protein Coding"
+ul1_r1$gene_biotype[ul1_r1$V4%in%sca$V4] <- "scaRNA"
+
+ul1_r1$Sample <- "TAF15"
+eclip_taf15 <- ul1_r1
+
+ul1_i<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_i <- ul1_i[-1,]
+
+
+ul1_r1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_FUS_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r1 <- ul1_r1[-1,]
+
+ul1_r2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_FUS_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r2 <- ul1_r2[-1,]
+
+
+ul1_ni<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_ni <- ul1_ni[-1,]
+
+
+ul1_nr1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_FUS_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr1 <- ul1_nr1[-1,]
+
+ul1_nr2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_FUS_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr2 <- ul1_nr2[-1,]
+
+ul1_i <- rbind(ul1_i,ul1_ni)
+ul1_r1 <- rbind(ul1_r1,ul1_nr1)
+ul1_r2 <- rbind(ul1_r2,ul1_nr2)
+
+ul1_r1$FC <- (((ul1_r1$V7+ul1_r2$V7)/2)/ul1_i$V7)
+
+ul1_r1$ctrlreads <- ul1_i$V7
+ul1_r1 <- na.omit(ul1_r1)
+
+ul1_r1$length <- (ul1_r1$V3-ul1_r1$V2)/1000
+ul1_r1 <- ul1_r1%>%
+  dplyr::filter(ul1_r1$ctrlreads > ul1_r1$length& ul1_r1$ctrlreads > 10)
+
+
+ul1_r1$LFC <- log2(ul1_r1$FC)
+
+ul1_r1$gene_biotype[ul1_r1$V4%in%snrna$V4] <- "snRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%linc$V4] <- "lincRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%cd$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%haca$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%pc$V4] <- "Protein Coding"
+ul1_r1$gene_biotype[ul1_r1$V4%in%sca$V4] <- "scaRNA"
+
+ul1_r1$Sample <- "FUS"
+eclip_fus <- ul1_r1
+
+ul1_i<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_EWSR1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_i <- ul1_i[-1,]
+
+
+ul1_r1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r1 <- ul1_r1[-1,]
+
+ul1_r2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r2 <- ul1_r2[-1,]
+
+
+ul1_ni<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_EWSR1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_ni <- ul1_ni[-1,]
+
+
+ul1_nr1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr1 <- ul1_nr1[-1,]
+
+ul1_nr2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr2 <- ul1_nr2[-1,]
+
+ul1_i <- rbind(ul1_i,ul1_ni)
+ul1_r1 <- rbind(ul1_r1,ul1_nr1)
+ul1_r2 <- rbind(ul1_r2,ul1_nr2)
+
+ul1_r1$FC <- (((ul1_r1$V7+ul1_r2$V7)/2)/ul1_i$V7)
+
+ul1_r1$ctrlreads <- ul1_i$V7
+ul1_r1 <- na.omit(ul1_r1)
+
+ul1_r1$length <- (ul1_r1$V3-ul1_r1$V2)/1000
+ul1_r1 <- ul1_r1%>%
+  dplyr::filter(ul1_r1$ctrlreads > ul1_r1$length& ul1_r1$ctrlreads > 10)
+
+
+ul1_r1$LFC <- log2(ul1_r1$FC)
+
+ul1_r1$gene_biotype[ul1_r1$V4%in%snrna$V4] <- "snRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%linc$V4] <- "lincRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%cd$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%haca$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%pc$V4] <- "Protein Coding"
+ul1_r1$gene_biotype[ul1_r1$V4%in%sca$V4] <- "scaRNA"
+
+ul1_r1$Sample <- "EWSR1"
+eclip_ewsr1 <- ul1_r1
+
+ul1_i<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_TARDBP_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_i <- ul1_i[-1,]
+
+
+ul1_r1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_TARDBP_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r1 <- ul1_r1[-1,]
+
+ul1_r2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/positive/matrix_K562_TARDBP_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_r2 <- ul1_r2[-1,]
+
+
+ul1_ni<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_TARDBP_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_ni <- ul1_ni[-1,]
+
+
+ul1_nr1<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_TARDBP_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr1 <- ul1_nr1[-1,]
+
+ul1_nr2<- read.csv(".//enrichment_analysis/genesets/eclip_enrichment/negative//matrix_K562_TARDBP_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",sep="\t",header=F)
+ul1_nr2 <- ul1_nr2[-1,]
+
+ul1_i <- rbind(ul1_i,ul1_ni)
+ul1_r1 <- rbind(ul1_r1,ul1_nr1)
+ul1_r2 <- rbind(ul1_r2,ul1_nr2)
+
+ul1_r1$FC <- (((ul1_r1$V7+ul1_r2$V7)/2)/ul1_i$V7)
+
+ul1_r1$ctrlreads <- ul1_i$V7
+ul1_r1 <- na.omit(ul1_r1)
+
+ul1_r1$length <- (ul1_r1$V3-ul1_r1$V2)/1000
+ul1_r1 <- ul1_r1%>%
+  dplyr::filter(ul1_r1$ctrlreads > ul1_r1$length& ul1_r1$ctrlreads > 10)
+
+
+ul1_r1$LFC <- log2(ul1_r1$FC)
+
+ul1_r1$gene_biotype[ul1_r1$V4%in%snrna$V4] <- "snRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%linc$V4] <- "lincRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%cd$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%haca$V4] <- "snoRNA"
+ul1_r1$gene_biotype[ul1_r1$V4%in%pc$V4] <- "Protein Coding"
+ul1_r1$gene_biotype[ul1_r1$V4%in%sca$V4] <- "scaRNA"
+
+ul1_r1$Sample <- "TDP43"
+eclip_tdp <- ul1_r1
+
+eclip <- rbind(eclip_taf15,eclip_ul1,eclip_u,eclip_fus,eclip_ewsr1,eclip_tdp)
+```
+
+```{r,fig.width=9,fig.height=3}
+library(Ipaper)
+library(ggplot2)
+ggplot(eclip,aes(x=Sample,y=LFC,fill=Sample))+
+geom_boxplot(width=0.4,outlier.size = 0.6)+
+  ylab("Log2 Fold Change over Input eCLIP")+
+  theme_bw()+
+       theme(plot.title = element_text(size=10))+
+    theme(legend.position = "none")+
+  xlab("")+
+  coord_flip()+
+  scale_colour_brewer(palette="BuPu",direction=-1)+
+  theme(panel.spacing.x=unit(0.5, "lines") , panel.spacing.y=unit(0.5,"lines"))+
+  geom_hline(aes(yintercept=0),colour="grey30",linetype="dashed")+
+  facet_grid(.~gene_biotype)
+ggsave("./eCLIP_feb_2023.png",height=3.25,width=9,units="in")
+```

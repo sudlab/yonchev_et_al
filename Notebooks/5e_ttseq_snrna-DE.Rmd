@@ -1,0 +1,106 @@
+TTSEQ OVER SNRNAS 
+
+```{r}
+library(dplyr)
+hct1<- read.csv("./positive/matrix_spliced-HCT116_1_forward.gz",sep="\t",header=F)
+hct1 <- hct1[-1,]
+
+
+hct1_n<- read.csv("./negative/matrix_spliced-HCT116_1_reverse.gz",sep="\t",header=F)
+hct1_n <- hct1_n[-1,]
+
+
+
+hct2<- read.csv("./positive/matrix_spliced-HCT116_2_forward.gz",sep="\t",header=F)
+hct2 <- hct2[-1,]
+
+hct2_n<- read.csv("./negative/matrix_spliced-HCT116_1_reverse.gz",sep="\t",header=F)
+hct2_n <- hct2_n[-1,]
+
+
+ul1<- read.csv("./positive/matrix_spliced-UL1_1_forward.gz",sep="\t",header=F)
+ul1 <- ul1[-1,]
+
+ul1_n<- read.csv("./negative/matrix_spliced-UL1_1_reverse.gz",sep="\t",header=F)
+ul1_n <- ul1_n[-1,]
+
+
+ul2<- read.csv("./positive/matrix_spliced-UL1_2_forward.gz",sep="\t",header=F)
+ul2 <- ul2[-1,]
+
+ul2_n<- read.csv("./negative/matrix_spliced-UL1_2_reverse.gz",sep="\t",header=F)
+ul2_n <- ul2_n[-1,]
+
+
+
+hct1 <- rbind(hct1,hct1_n)
+hct2 <- rbind(hct2,hct2_n)
+ul1 <- rbind(ul1,ul1_n)
+ul2<- rbind(ul2,ul2_n)
+
+hct1$LFC <- (ul1$V7 / hct1$V7) 
+hct2$LFC <- (ul2$V7 / hct2$V7)
+
+
+hct1$LFC <- log2((hct1$LFC+hct2$LFC)/2)
+hct1 <- hct1[!is.infinite(hct1$LFC),]
+hct1 <- na.omit(hct1)
+
+
+hct1 <- hct1%>%
+  dplyr::filter(hct1$V4 != "ENST00000408749.1" & hct1$V4 != "ENST00000383898.1" & hct1$V4 != "ENST00000384627.1" & hct1$V4 != "ENST00000365467.1" & hct1$V4 != "ENST00000384776.1")
+
+
+
+list <- read.csv("./genes_slopped.bed",sep="\t",header=F)
+
+
+hct1$Biotype <- hct1$V4 %in% list$V4
+
+hct1$Biotype[hct1$Biotype=="TRUE"] <- "snRNA"
+hct1$Biotype[hct1$Biotype=="FALSE"] <- "Protein Coding"
+
+ttseq_ul1 <- hct1
+
+ttseq_ul1$Sample <- "hnRNPUL1"
+```
+
+```{r}
+ttest <- ttseq_ul1
+ttest<- ttest%>%
+  dplyr::filter(ttest$Biotype=="snRNA")
+
+ttest$Sample <- "UL1"
+ttest1 <- ttest
+ttest1$LFC <- 0
+ttest1$Sample <- "Ctrl"
+ttest2 <- rbind(ttest1,ttest)
+
+t.test(LFC~Sample,data=ttest2)
+```
+
+```{r,fig.height=2.5,fig.width=2.5}
+library(ggplot2)
+library(Ipaper)
+
+ggplot(ttseq_ul1,aes(x=Biotype,y=LFC,fill=Biotype))+
+      geom_violin(trim=TRUE,width=0.75)+
+geom_boxplot(width=0.2,width.errorbar = 0.1,outlier.shape = NA)+
+  ylab("Log2 Normalized Counts")+
+  ylab(bquote(paste('Log2FC TTchem-seq')))+
+  theme_bw()+
+  theme(plot.title = element_text(size=9))+
+  theme(legend.position = "none")+
+  xlab("")+
+  coord_cartesian(ylim=c(-2,2))+
+              annotate(geom="text", x=1.065, y=1.5, label="n = 9348",
+              color="black",size=3.5)+
+              annotate(geom="text", x=2, y=1.2, label="n = 16",
+              color="black",size=3.5)+
+                annotate(geom="text", x=2, y=0.8, label="***",
+              color="black",size=5)+
+  geom_hline(aes(yintercept=0),colour="grey30",linetype="dashed")
+ggsave(file="./TTseq_snRNA.png",dpi=300,units="in",width=2.5,height=2.5)
+```
+
+

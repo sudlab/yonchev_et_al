@@ -1,0 +1,1287 @@
+To account for low number of reads in input and IP at specific regions, pseudocounts of 1 were added.
+
+```{r}
+library(dplyr)
+ul1_c <- read.csv("./U2/matrix_K562_HNRNPUL1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+ul1 <- test
+ul1$Sample <- "hnRNPUL1"
+
+ul1_c <- read.csv("./U2/matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_FUS_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+fus <- test
+fus$Sample <- "FUS"
+
+ul1_c <- read.csv("./U2/matrix_K562_EWSR1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+ewsr <- test
+ewsr$Sample <- "EWSR"
+
+ul1_c <- read.csv("./U2/matrix_K562_HNRNPA1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_HNRNPA1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_HNRNPA1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpa1<- test
+hnrnpa1$Sample <- "hnRNPA1"
+
+ul1_c <- read.csv("./U2/matrix_K562_HNRNPC_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_HNRNPC_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_HNRNPC_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpc <- test
+hnrnpc$Sample <- "hnRNPC"
+
+ul1_c <- read.csv("./U2/matrix_K562_HNRNPK_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_HNRNPK_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_HNRNPK_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpk <- test
+hnrnpk$Sample <- "hnRNPK"
+
+ul1_c <- read.csv("./U2/matrix_K562_HNRNPL_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_HNRNPL_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_HNRNPL_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpl <- test
+hnrnpl$Sample <- "hnRNPL"
+
+ul1_c <- read.csv("./U2/matrix_K562_HNRNPU_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpu <- test
+hnrnpu$Sample <- "hnRNPU"
+
+ul1_c <- read.csv("./U2/matrix_K562_TAF15_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U2/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U2/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.rev_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+taf15 <- test
+taf15$Sample <- "TAF15"
+
+metagene_u2 <- rbind(ul1,fus,ewsr,taf15,hnrnpa1,hnrnpc,hnrnpk,hnrnpl,hnrnpu)
+```
+
+
+U7
+
+
+```{r}
+library(dplyr)
+ul1_c <- read.csv("./U7/matrix_K562_HNRNPUL1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+ul1 <- test
+ul1$Sample <- "hnRNPUL1"
+
+ul1_c <- read.csv("./U7/matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_FUS_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+fus <- test
+fus$Sample <- "FUS"
+
+ul1_c <- read.csv("./U7/matrix_K562_EWSR1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+ewsr <- test
+ewsr$Sample <- "EWSR"
+
+ul1_c <- read.csv("./U7/matrix_K562_HNRNPA1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_HNRNPA1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_HNRNPA1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpa1<- test
+hnrnpa1$Sample <- "hnRNPA1"
+
+ul1_c <- read.csv("./U7/matrix_K562_HNRNPC_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_HNRNPC_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_HNRNPC_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpc <- test
+hnrnpc$Sample <- "hnRNPC"
+
+ul1_c <- read.csv("./U7/matrix_K562_HNRNPK_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_HNRNPK_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_HNRNPK_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpk <- test
+hnrnpk$Sample <- "hnRNPK"
+
+ul1_c <- read.csv("./U7/matrix_K562_HNRNPL_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_HNRNPL_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_HNRNPL_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpl <- test
+hnrnpl$Sample <- "hnRNPL"
+
+ul1_c <- read.csv("./U7/matrix_K562_HNRNPU_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpu <- test
+hnrnpu$Sample <- "hnRNPU"
+
+ul1_c <- read.csv("./U7/matrix_K562_TAF15_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U7/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U7/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+taf15 <- test
+taf15$Sample <- "TAF15"
+
+metagene_u7 <- rbind(ul1,fus,ewsr,taf15,hnrnpa1,hnrnpc,hnrnpk,hnrnpl,hnrnpu)
+```
+
+
+
+
+
+
+U11
+
+
+
+```{r}
+library(dplyr)
+ul1_c <- read.csv("./U11/matrix_K562_HNRNPUL1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_HNRNPUL1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+ul1 <- test
+ul1$Sample <- "hnRNPUL1"
+
+ul1_c <- read.csv("./U11/matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_FUS_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_FUS_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+fus <- test
+fus$Sample <- "FUS"
+
+ul1_c <- read.csv("./U11/matrix_K562_EWSR1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_EWSR1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+ewsr <- test
+ewsr$Sample <- "EWSR"
+
+ul1_c <- read.csv("./U11/matrix_K562_HNRNPA1_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_HNRNPA1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_HNRNPA1_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpa1<- test
+hnrnpa1$Sample <- "hnRNPA1"
+
+ul1_c <- read.csv("./U11/matrix_K562_HNRNPC_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_HNRNPC_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_HNRNPC_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpc <- test
+hnrnpc$Sample <- "hnRNPC"
+
+ul1_c <- read.csv("./U11/matrix_K562_HNRNPK_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_HNRNPK_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_HNRNPK_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpk <- test
+hnrnpk$Sample <- "hnRNPK"
+
+ul1_c <- read.csv("./U11/matrix_K562_HNRNPL_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_HNRNPL_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_HNRNPL_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpl <- test
+hnrnpl$Sample <- "hnRNPL"
+
+ul1_c <- read.csv("./U11/matrix_K562_HNRNPU_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_HNRNPU_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+hnrnpu <- test
+hnrnpu$Sample <- "hnRNPU"
+
+ul1_c <- read.csv("./U11/matrix_K562_TAF15_Input_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_c <- ul1_c[-1,]
+
+ul1_1 <- read.csv("./U11/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_1_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_1 <- ul1_1[-1,]
+
+ul1_2 <- read.csv("./U11/matrix_K562_TAF15_eCLIP_Gene_Yeo_UCSD_eCLIP_Replicate_2_lane1.fwd_All.eCLIP.norm.gz",header=F,sep="\t")
+ul1_2 <- ul1_2[-1,]
+
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+ul1_c <- ul1_c[,!(names(ul1_c) %in% drop)]
+ul1_1 <- ul1_1[,!(names(ul1_1) %in% drop)]
+ul1_2 <- ul1_2[,!(names(ul1_2) %in% drop)]
+
+
+ul1_c <- ul1_c+1
+ul1_1 <- ul1_1+1
+ul1_2 <- ul1_2+1
+
+ul1_1 <- ((ul1_1+ul1_2)/2)/ul1_c
+
+
+
+ul1_1 <- mutate_all(ul1_1, function(x) as.numeric(as.character(x)))
+
+
+ul1_csum <- as.data.frame(colSums(ul1_1,))
+ul1_csum$bin <- 1:nrow(ul1_csum)
+names(ul1_csum)[1] <- "Sum"
+
+ul1_csum$Sample <- "hnRNPUL1"
+
+
+test <- ul1_csum
+test[] <- lapply(test, gsub, pattern = "NaN", replacement = 0, fixed = TRUE)
+test[] <- lapply(test, gsub, pattern = "Inf", replacement = 0, fixed = TRUE)
+
+test$Sum <- as.numeric(test$Sum)
+test$bin <- as.numeric(test$bin)
+
+taf15 <- test
+taf15$Sample <- "TAF15"
+
+metagene_u11 <- rbind(ul1,fus,ewsr,taf15,hnrnpa1,hnrnpc,hnrnpk,hnrnpl,hnrnpu)
+```
+
+
+
+
+```{r,fig.height=2.75,fig.width=8}
+library(ggplot2)
+library(dplyr)
+cbbPalette <- c("#999999", "#E69F00", "#CC79A7", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#56B4E9","#000000")
+metagene_u2%>%
+ggplot() +
+  aes(x=bin, y=Sum, col=Sample) +
+  scale_colour_manual(values=cbbPalette)+
+  geom_line(size=.65)+
+    theme_classic() +
+    theme(plot.title=element_text(hjust=0,size=11)) +
+  ylab("Fold Change over Input eCLIP")+
+  geom_vline(xintercept = c(154), linetype=2,
+                color = "grey50", size=0.25)+
+    geom_vline(xintercept = c(176), linetype=2,
+                color = "grey50", size=0.25)+
+  coord_cartesian(xlim=c(0,188))+
+  scale_x_continuous(name=NULL, breaks=c(166), labels=c("Stem loop"))
+ggsave(".//eCLIP_U2.png",height=2.75,width=8,units="in")
+```
+
+
+
+
+```{r,fig.height=2.75,fig.width=5}
+library(ggplot2)
+library(dplyr)
+cbbPalette <- c("#999999", "#E69F00", "#CC79A7", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#56B4E9","#000000")
+metagene_u7%>%
+ggplot() +
+  aes(x=bin, y=Sum, col=Sample) +
+  scale_colour_manual(values=cbbPalette)+
+  geom_line(size=.65)+
+    theme_classic() +
+    theme(plot.title=element_text(hjust=0,size=11)) +
+  ylab("Fold Change over Input eCLIP")+
+  geom_vline(xintercept = c(34), linetype=2,
+                color = "grey50", size=0.25)+
+    geom_vline(xintercept = c(60), linetype=2,
+                color = "grey50", size=0.25)+
+  coord_cartesian(xlim=c(0,63))+
+  scale_x_continuous(name=NULL, breaks=c(47), labels=c("Stem loop"))
+ggsave(".//eCLIP_U7_1.png",height=2.75,width=5,units="in")
+```
+
+```{r,fig.height=2.75,fig.width=8}
+library(ggplot2)
+library(dplyr)
+cbbPalette <- c("#999999", "#E69F00", "#CC79A7", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#56B4E9","#000000")
+metagene_u11%>%
+ggplot() +
+  aes(x=bin, y=Sum, col=Sample) +
+  scale_colour_manual(values=cbbPalette)+
+  geom_line(size=.65)+
+    theme_classic() +
+    theme(plot.title=element_text(hjust=0,size=11)) +
+  ylab("Fold Change over Input eCLIP")+
+  geom_vline(xintercept = c(102), linetype=2,
+                color = "grey50", size=0.25)+
+    geom_vline(xintercept = c(132), linetype=2,
+                color = "grey50", size=0.25)+
+  coord_cartesian(xlim=c(0,135))+
+  labs(color=NULL)+
+  scale_x_continuous(name=NULL, breaks=c(117), labels=c("Stem loop"))
+ggsave(".//eCLIP_U11.png",height=2.75,width=8,units="in")
+```
+
+
+

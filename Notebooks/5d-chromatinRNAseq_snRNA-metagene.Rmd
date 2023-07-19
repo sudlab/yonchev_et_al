@@ -1,0 +1,133 @@
+Loci with >50k counts tend to be mostly mature snRNAs. To select nascent we keep everything < 50k. 
+
+```{r}
+library(dplyr)
+hct1_p <- read.csv("./positive//matrix_HCT_1_forward.gz",header=F,sep="\t")
+hct1_p <- hct1_p[-1,]
+hct2_p<- read.csv(".//positive/matrix_HCT_2_forward.gz",header=F,sep="\t")
+hct2_p <- hct2_p[-1,]
+hct3_p<- read.csv(".//positive/matrix_HCT_3_forward.gz",header=F,sep="\t")
+hct3_p <- hct3_p[-1,]
+ul1_p<- read.csv(".//positive/matrix_UL1_1_forward.gz",header=F,sep="\t")
+ul1_p <- ul1_p[-1,]
+ul2_p<- read.csv(".//positive/matrix_UL1_2_forward.gz",header=F,sep="\t")
+ul2_p <- ul2_p[-1,]
+ul3_p<- read.csv(".//positive/matrix_UL1_3_forward.gz",header=F,sep="\t")
+ul3_p <- ul3_p[-1,]
+
+
+
+
+hct1_n <- read.csv(".//negative/matrix_HCT_1_reverse.gz",header=F,sep="\t")
+hct1_n <- hct1_n[-1,]
+hct2_n<- read.csv(".//negative/matrix_HCT_2_reverse.gz",header=F,sep="\t")
+hct2_n <- hct2_n[-1,]
+hct3_n<- read.csv(".//negative/matrix_HCT_3_reverse.gz",header=F,sep="\t")
+hct3_n <- hct3_n[-1,]
+ul1_n<- read.csv(".//negative/matrix_UL1_1_reverse.gz",header=F,sep="\t")
+ul1_n <- ul1_n[-1,]
+ul2_n<- read.csv(".//negative/matrix_UL1_2_reverse.gz",header=F,sep="\t")
+ul2_n <- ul2_n[-1,]
+ul3_n<- read.csv(".//negative/matrix_UL1_3_reverse.gz",header=F,sep="\t")
+ul3_n <- ul3_n[-1,]
+
+hct1_p <- rbind(hct1_p,hct1_n)
+hct2_p <- rbind(hct2_p,hct2_n)
+hct3_p <- rbind(hct3_p,hct3_n)
+ul1_p<-rbind(ul1_n,ul1_p)
+ul2_p<-rbind(ul2_p,ul2_n)
+ul3_p<-rbind(ul3_n,ul3_p)
+
+
+row.names(hct1_p) <- hct1_p$V4
+row.names(hct2_p) <- hct2_p$V4
+row.names(hct3_p) <- hct3_p$V4
+
+row.names(ul1_p) <- ul1_p$V4
+row.names(ul2_p) <- ul2_p$V4
+row.names(ul3_p) <- ul3_p$V4
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+hct1_p <- hct1_p[,!(names(hct1_p) %in% drop)]
+hct2_p <- hct2_p[,!(names(hct2_p) %in% drop)]
+hct3_p <- hct3_p[,!(names(hct3_p) %in% drop)]
+ul1_p <- ul1_p[,!(names(ul1_p) %in% drop)]
+ul2_p <- ul2_p[,!(names(ul2_p) %in% drop)]
+ul3_p <- ul3_p[,!(names(ul3_p) %in% drop)]
+
+hct_1 <- (hct1_p+hct2_p+hct3_p) /3
+
+ul1_p <- (ul1_p+ul2_p+ul3_p)/3
+
+
+hct1_p[] <- lapply(hct1_p, gsub, pattern = "NaN", replacement = 1, fixed = TRUE)
+hct1_p <- mutate_all(hct1_p, function(x) as.numeric(as.character(x)))
+counts <-as.data.frame(rowSums(hct1_p,))
+counts<-counts%>%
+  dplyr::filter(counts$`rowSums(hct1_p, )`<50000)
+
+ul1_p[] <- lapply(ul1_p, gsub, pattern = "NaN", replacement = 1, fixed = TRUE)
+ul1_p <- mutate_all(ul1_p, function(x) as.numeric(as.character(x)))
+countsul1 <- as.data.frame(rowSums(ul1_p))
+countsul1<-countsul1%>%
+  dplyr::filter(countsul1$`rowSums(ul1_p)`<50000)
+
+hct1_p <- hct1_p%>%
+  dplyr::filter(row.names(hct1_p)%in%row.names(counts) & row.names(hct1_p)%in%row.names(countsul1))
+
+ul1_p <- ul1_p%>%
+  dplyr::filter(row.names(ul1_p)%in%row.names(counts) & row.names(ul1_p)%in%row.names(countsul1))
+
+hct1_pn <- as.data.frame(t(apply(hct1_p,1,function(x) x/sum(x))))
+ul1_pn <- as.data.frame(t(apply(ul1_p,1,function(x) x/sum(x))))
+
+hct1_pn <- hct1_p
+
+ul1_pn <- ul1_p
+
+
+hct1_sum <- as.data.frame(colSums(hct1_pn,))
+hct1_sum$bin <- 1:120
+hct1_sum$Sample <- "HCT116_1"
+hct1_sum$`colSums(hct1_pn, )` <- hct1_sum$`colSums(hct1_pn, )`/sum(hct1_sum$`colSums(hct1_pn, )`)
+
+
+ul1_sum <- as.data.frame(colSums(ul1_pn,))
+ul1_sum$bin <- 1:120
+ul1_sum$Sample <- "UL1_1"
+ul1_sum$`colSums(ul1_pn, )` <- ul1_sum$`colSums(ul1_pn, )`/sum(ul1_sum$`colSums(ul1_pn, )`)
+
+names(hct1_sum)[1] <- "Sum"
+
+names(ul1_sum)[1] <- "Sum"
+
+hct1_sum$Sample <- "HCT116"
+ul1_sum$Sample <- "hnRNPUL1"
+metagene <- rbind(ul1_sum,hct1_sum)
+
+metagene$Sum <- metagene$Sum*100
+```
+
+```{r,fig.height=2,fig.width=4}
+library(ggplot2)
+
+cbbPalette <- c( "#E69F00", "#56B4E9")
+metagene%>%
+ggplot() +
+  aes(x=bin, y=Sum, col=Sample) +
+  scale_colour_manual(values=cbbPalette)+
+  geom_smooth(size=.65,n=1000,method="loess",span=0.05) +
+    theme_classic() +
+    theme(plot.title=element_text(hjust=0,size=11)) +
+  ylab("Chromatin RNA-seq \n signal over snRNA loci")+
+      theme(axis.title.y=element_text(size = 10))+
+  geom_vline(xintercept = c(10), linetype=2,
+                color = "grey50", size=0.25)+
+    geom_vline(xintercept = c(20), linetype=2,
+                color = "grey50", size=0.25)+
+  coord_cartesian(xlim=c(0,120))+
+  theme(axis.text.x =(element_text(angle = 45, vjust = 1, hjust=1,colour="black")))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))+
+  scale_x_continuous(name=NULL, breaks=c(0,10,20,110), labels=c("-100","TSS","TTS","+1kb"))
+ggsave("./UL1_chrom_snRNA.png",height=2,width=4,units="in")
+```

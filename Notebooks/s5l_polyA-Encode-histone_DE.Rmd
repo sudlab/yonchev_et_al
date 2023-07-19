@@ -1,0 +1,117 @@
+
+```{R message=FALSE}
+library(dplyr)
+library(DESeq2)
+geneconversiontable <- read.delim("./combined_exon_counts.txt")
+geneconversiontable$Geneid.Chr.Start.End.Strand.Length <- substr(geneconversiontable$Geneid.Chr.Start.End.Strand.Length, 0, 15)
+
+
+geneconversiontable$Geneid.Chr.Start.End.Strand.Length <- gsub("\\-.*","",geneconversiontable$Geneid.Chr.Start.End.Strand.Length)
+
+geneconversiontable <- geneconversiontable%>%
+  dplyr::select(Geneid.Chr.Start.End.Strand.Length,trimmed.K562_hnRNPUL1_ctrl1.star.counts,trimmed.K562_hnRNPUL1_ctrl2.star.counts,trimmed.K562_hnRNPUL1_r1.star.counts,trimmed.K562_hnRNPUL1_r2.star.counts)
+
+
+names(geneconversiontable)[2] <- "ctrl_R1"
+names(geneconversiontable)[3] <- "ctrl_R2"
+names(geneconversiontable)[4] <- "UL1_R1"
+names(geneconversiontable)[5] <- "UL1_R2"
+
+condition <- factor(c("ctrl","ctrl","UL1","UL1"))
+samples <- as.data.frame(4:1)
+rownames(samples)<-c("ctrl_R1","ctrl_R2","UL1_R1","UL1_R2")
+colnames(samples)<-"condition"
+samples$condition<-condition
+
+row.names(geneconversiontable) <- geneconversiontable$Geneid.Chr.Start.End.Strand.Length
+geneconversiontable[1] <- NULL
+
+ddsTxi <- DESeqDataSetFromMatrix(geneconversiontable,
+                                   colData = samples,
+                                   design = ~ condition)
+
+dds <- DESeq(ddsTxi)
+
+
+res <-results(dds, lfcThreshold = 0)
+resdata <- merge(as.data.frame(res), as.data.frame(counts(dds, normalized=TRUE,replaced=TRUE)), by="row.names", sort=FALSE)
+names(resdata)[1] <- "geneid"
+resdata <- resdata%>%
+  dplyr::filter(resdata$baseMean>40)
+
+plotMA(res,coef = "log2FoldChange")
+abline(h=0, col="red")
+```
+
+```{r}
+library(RSQLite)
+
+histones <- as.data.frame(read.csv("./replication_dependent_histones.txt"))
+names(histones)[1] <- "Gene"
+
+db <- dbConnect(SQLite(), "/mnt/sharc/shared/sudlab1/General/annotations/hg38_noalt_ensembl85/csvdb")
+biotypes <- dbGetQuery(db, "SELECT DISTINCT gene_id, gene_biotype FROM gene_info")
+uniquebiotypes <- unique(biotypes$gene_biotype)
+names(resdata)[1] <- "gene_id"
+
+biotypesexpgenesctrl <- biotypes[which(biotypes$gene_id %in% resdata$gene_id),]
+names(biotypesexpgenesctrl)[1] <- "gene_id"
+test <- merge(biotypesexpgenesctrl,resdata,by.x="gene_id",by.y="gene_id")
+
+
+
+library(biomaRt)
+ensembl=useMart("ensembl", dataset="hsapiens_gene_ensembl")
+genes <- test$gene_id
+G_list <- getBM(filters= "ensembl_gene_id", attributes= c("ensembl_gene_id","hgnc_symbol"),values=genes,mart=ensembl)
+idx <- match(test$gene_id, G_list$ensembl_gene_id)
+test$Gene <- G_list$hgnc_symbol[idx]
+test$Gene[test$gene_id=="ENSG00000203812"] <- "H2AC18"
+test$gene_biotype[test$Gene%in%histones$Gene] <- "Histone"
+
+
+histoneplot <- test%>%
+  dplyr::filter(test$gene_biotype=="protein_coding" | test$gene_biotype=="Histone")
+
+histoneplot$gene_biotype[histoneplot$gene_biotype=="protein_coding"] <- "Protein Coding"
+
+```
+
+
+```{r}
+ttest1 <- histoneplot%>%dplyr::filter(histoneplot$gene_biotype=="Histone")
+ttest2 <- ttest1
+ttest1$Sample <- "hnRNPUL1"
+ttest2$log2FoldChange <- 0
+ttest2$Sample <- "HCT116"
+ttest3 <- rbind(ttest1,ttest2)
+
+t.test(log2FoldChange~Sample,data=ttest3)
+```
+```{r,fig.width=2.25,fig.height=2.25}
+
+histoneplot$gene_biotype = with(histoneplot, reorder(gene_biotype, log2FoldChange, decreasing=FALSE))
+
+library(Ipaper)
+library(ggplot2)
+ggplot(histoneplot,aes(x=gene_biotype,y=log2FoldChange,fill=gene_biotype))+
+        geom_violin(trim=TRUE,width=0.75)+
+geom_boxplot(width=0.2,width.errorbar = 0.1,outlier.size=0.6)+
+  ylab("Log2 Normalized Counts")+
+    ylab(bquote(paste('Log2FC RNA-seq')))+
+  theme_bw()+
+  coord_cartesian(ylim=c(-2,2.5))+
+       theme(plot.title = element_text(size=10))+
+    theme(legend.position = "none")+
+  xlab("")+
+               annotate(geom="text", x=2, y=2, label="***",
+               color="black",size=6)+
+               annotate(geom="text", x=2, y=1.8, label="n=37",
+               color="black",size=3.25)+
+               annotate(geom="text", x=0.935, y=2.3, label="n=12,900",
+               color="black",size=3.25)+
+  scale_colour_brewer(palette="BuPu",direction=-1)+
+  theme(panel.spacing.x=unit(0.5, "lines") , panel.spacing.y=unit(0.5,"lines"))+
+  geom_hline(aes(yintercept=0),colour="grey30",linetype="dashed")
+ggsave("./K562_UL1RNAI_Histones.png",height=2.25,width=2.25,units="in")
+```

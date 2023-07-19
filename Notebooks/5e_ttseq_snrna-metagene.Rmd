@@ -1,0 +1,83 @@
+```{r}
+library(dplyr)
+hct1_p <- read.csv("./positive/matrix_spliced-HCT116_1_forward.gz",sep="\t",header=F)
+hct1_p <- hct1_p[-1,]
+
+hct2_p <- read.csv("./positive/matrix_spliced-HCT116_2_forward.gz",sep="\t",header=F)
+hct2_p <- hct2_p[-1,]
+
+ul1_p <- read.csv("./positive/matrix_spliced-UL1_1_forward.gz",sep="\t",header=F)
+ul1_p <- ul1_p[-1,]
+
+ul2_p <- read.csv("./positive/matrix_spliced-UL1_2_forward.gz",sep="\t",header=F)
+ul2_p <- ul2_p[-1,]
+
+
+hct1_n <- read.csv("./negative//matrix_spliced-HCT116_1_reverse.gz",sep="\t",header=F)
+hct1_n <- hct1_n[-1,]
+
+hct2_n <- read.csv("./negative//matrix_spliced-HCT116_2_reverse.gz",sep="\t",header=F)
+hct2_n <- hct2_n[-1,]
+
+ul1_n <- read.csv("./negative//matrix_spliced-UL1_1_reverse.gz",sep="\t",header=F)
+ul1_n <- ul1_n[-1,]
+
+ul2_n <- read.csv("./negative//matrix_spliced-UL1_2_reverse.gz",sep="\t",header=F)
+ul2_n <- ul2_n[-1,]
+
+hct1 <- rbind(hct1_p,hct1_n)
+hct2 <- rbind(hct2_p,hct2_n)
+ul1 <- rbind(ul1_p,ul1_n)
+ul2 <- rbind(ul2_p,ul2_n)
+
+drop <- c("V1","V2","V3","V4","V5","V6")
+hct1 <- hct1[,!(names(hct1) %in% drop)]
+hct2 <- hct2[,!(names(hct2) %in% drop)]
+ul1 <- ul1[,!(names(ul1) %in% drop)]
+ul2 <- ul2[,!(names(ul2) %in% drop)]
+
+hct1[is.na(hct1)] <-0
+hct2[is.na(hct2)] <-0
+ul1[is.na(ul1)] <-0
+ul2[is.na(ul2)] <-0
+
+hct <- (hct1+hct2)/2
+ul1<- (ul1+ul2)/2
+
+hct_sum <- as.data.frame(colSums(hct,))
+hct_sum$bin <- 1:1300
+names(hct_sum)[1] <- "Sum"
+hct_sum$Sample <- "HCT116"
+
+ul1_sum <- as.data.frame(colSums(ul1,))
+ul1_sum$bin <- 1:1300
+names(ul1_sum)[1] <- "Sum"
+ul1_sum$Sample <- "hnRNPUL1"
+
+metagene <- rbind(ul1_sum,hct_sum)
+metagene$Sum <- metagene$Sum/10000
+```
+
+```{r,fig.height=2,fig.width=4}
+library(ggplot2)
+
+cbbPalette <- c( "#E69F00", "#56B4E9")
+metagene%>%
+ggplot() +
+  aes(x=bin, y=Sum, col=Sample) +
+  scale_colour_manual(values=cbbPalette)+
+  geom_smooth(size=.65,n=1000,method="loess",span=0.05) +
+    theme_classic() +
+    theme(plot.title=element_text(hjust=0,size=11)) +
+  ylab("Normalized TT-seq \n coverage over snRNA loci")+
+      theme(axis.title.y=element_text(size = 8.75))+
+  geom_vline(xintercept = c(100), linetype=2,
+                color = "grey50", size=0.25)+
+    geom_vline(xintercept = c(300), linetype=2,
+                color = "grey50", size=0.25)+
+  coord_cartesian(xlim=c(0,1300))+
+  theme(axis.text.x =(element_text(angle = 45, vjust = 1, hjust=1,colour="black")))+
+  guides(color=guide_legend(override.aes=list(fill=NA)))+
+  scale_x_continuous(name=NULL, breaks=c(0,100,300,1300), labels=c("-100","TSS","TES","+1kb"))
+ggsave("./TTseq_snRNA_metagene.png",height=2,width=4,units="in")
+```
